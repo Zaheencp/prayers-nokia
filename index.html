@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=240, height=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Prayer Times & Hijri Calendar</title>
+  <style>
+    /* Strict 240x320 QVGA Feature Phone Constraints */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 240px;
+      height: 320px;
+      max-width: 240px;
+      max-height: 320px;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background: #064e3b;
+      color: #ecfdf5;
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 320px;
+      box-sizing: border-box;
+      position: relative;
+      cursor: default;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar (35px) */
+    #top-bar {
+      height: 35px;
+      flex-shrink: 0;
+      background: rgba(4, 120, 87, 0.45);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 2px 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1px;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      line-height: 1.15;
+    }
+
+    .greg-date {
+      font-size: 11px;
+      font-weight: 600;
+      color: #ecfdf5;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    .moon-badge {
+      font-size: 10px;
+      color: #a7f3d0;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+
+    .hijri-date {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fbbf24; /* Golden accent */
+      letter-spacing: -0.1px;
+      white-space: nowrap;
+    }
+
+    .loc-badge {
+      font-size: 9px;
+      color: #a7f3d0;
+      background: rgba(6, 78, 59, 0.7);
+      padding: 0 4px;
+      border-radius: 3px;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      white-space: nowrap;
+    }
+
+    /* Next Prayer Spotlight Card (55px) */
+    #spotlight-card {
+      height: 55px;
+      flex-shrink: 0;
+      margin: 2px 6px 1px 6px;
+      padding: 4px 8px;
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+      border: 1px solid #10b981;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .spotlight-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .spotlight-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fbbf24; /* Golden highlight */
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    .spotlight-ar {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #d1fae5;
+    }
+
+    .spotlight-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .countdown-val {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.2px;
+    }
+
+    .method-tag {
+      font-size: 9px;
+      font-weight: 600;
+      color: #a7f3d0;
+      background: rgba(6, 78, 59, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* Prayer Times List (195px) */
+    #prayer-list {
+      height: 195px;
+      flex: 1;
+      min-height: 0;
+      margin: 1px 6px 2px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 2px;
+    }
+
+    .prayer-row {
+      flex: 1;
+      max-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 7px;
+      background: rgba(4, 120, 87, 0.3);
+      border: 1.5px solid transparent;
+      border-radius: 4px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .prayer-row-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(167, 243, 208, 0.4);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .p-name-en {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ecfdf5;
+      letter-spacing: -0.1px;
+    }
+
+    .p-name-ar {
+      font-size: 11px;
+      font-weight: 600;
+      color: #a7f3d0;
+      opacity: 0.9;
+    }
+
+    .prayer-row-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .p-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ecfdf5;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.2px;
+    }
+
+    /* Active Upcoming Prayer Highlight (Bright Gold/Cyan Border) */
+    .prayer-row.upcoming {
+      background: rgba(251, 191, 36, 0.16);
+      border: 1.5px solid #fbbf24;
+      box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.3);
+    }
+
+    .prayer-row.upcoming .status-dot {
+      background: #fbbf24;
+      box-shadow: 0 0 6px #fbbf24;
+      animation: pulse-dot 1.8s infinite ease-in-out;
+    }
+
+    .prayer-row.upcoming .p-name-en {
+      color: #fbbf24;
+    }
+
+    .prayer-row.upcoming .p-time {
+      color: #fef08a;
+    }
+
+    /* D-Pad Focused / Inspected Row Highlight (Bright Cyan Outline) */
+    .prayer-row.focused {
+      background: #047857;
+      outline: 2px solid #38bdf8;
+      outline-offset: -1px;
+      z-index: 2;
+    }
+
+    .prayer-row.focused.upcoming {
+      background: rgba(4, 120, 87, 0.9);
+      outline: 2px solid #38bdf8;
+      border: 1.5px solid #fbbf24;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.7; }
+    }
+
+    /* Bottom Softkey Guide (20px) */
+    #softkey-bar {
+      height: 20px;
+      flex-shrink: 0;
+      background: #022c22;
+      border-top: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 0 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #a7f3d0;
+      letter-spacing: -0.2px;
+    }
+
+    .softkey {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .softkey-num {
+      color: #fbbf24;
+    }
+
+    /* Floating Toast / Notification Overlay */
+    #toast {
+      position: absolute;
+      bottom: 26px;
+      left: 10px;
+      right: 10px;
+      background: rgba(2, 44, 34, 0.96);
+      border: 1.5px solid #10b981;
+      border-radius: 4px;
+      padding: 4px 6px;
+      text-align: center;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fbbf24;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 100;
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar (34px) -->
+  <header id="top-bar">
+    <div class="top-row">
+      <span class="greg-date" id="greg-date">-- --- ----</span>
+      <span class="moon-badge" id="moon-badge"><span>🌑</span><span>New</span></span>
+    </div>
+    <div class="top-row">
+      <span class="hijri-date" id="hijri-date">-- --- ---- AH</span>
+      <span class="loc-badge" id="loc-badge">Kerala (11.75°N)</span>
+    </div>
+  </header>
+
+  <!-- Next Prayer Spotlight Card (54px) -->
+  <section id="spotlight-card">
+    <div class="spotlight-top">
+      <span class="spotlight-title" id="spotlight-name">Next: FAJR</span>
+      <span class="spotlight-ar" id="spotlight-ar">الفجر</span>
+    </div>
+    <div class="spotlight-bottom">
+      <span class="countdown-val" id="countdown-val">in --m --s</span>
+      <span class="method-tag" id="method-tag">MWL • Calc</span>
+    </div>
+  </section>
+
+  <!-- Prayer Times List (~198px) -->
+  <main id="prayer-list" role="list">
+    <div class="prayer-row" data-index="0" id="row-0" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Fajr</span>
+        <span class="p-name-ar">الفجر</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-0">--:-- --</span>
+      </div>
+    </div>
+
+    <div class="prayer-row" data-index="1" id="row-1" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Sunrise</span>
+        <span class="p-name-ar">الشروق</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-1">--:-- --</span>
+      </div>
+    </div>
+
+    <div class="prayer-row" data-index="2" id="row-2" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Dhuhr</span>
+        <span class="p-name-ar">الظهر</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-2">--:-- --</span>
+      </div>
+    </div>
+
+    <div class="prayer-row" data-index="3" id="row-3" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Asr</span>
+        <span class="p-name-ar">العصر</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-3">--:-- --</span>
+      </div>
+    </div>
+
+    <div class="prayer-row" data-index="4" id="row-4" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Maghrib</span>
+        <span class="p-name-ar">المغرب</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-4">--:-- --</span>
+      </div>
+    </div>
+
+    <div class="prayer-row" data-index="5" id="row-5" role="listitem">
+      <div class="prayer-row-left">
+        <span class="status-dot"></span>
+        <span class="p-name-en">Isha</span>
+        <span class="p-name-ar">العشاء</span>
+      </div>
+      <div class="prayer-row-right">
+        <span class="p-time" id="time-5">--:-- --</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Softkey Guide (22px) -->
+  <footer id="softkey-bar">
+    <div class="softkey" id="btn-softkey-left">
+      <span>Method</span> <span class="softkey-num">(1)</span>
+    </div>
+    <div class="softkey" id="btn-softkey-center">
+      <span>Refresh</span> <span class="softkey-num">(5)</span>
+    </div>
+    <div class="softkey" id="btn-softkey-right">
+      <span>Exit</span> <span class="softkey-num">(RSK)</span>
+    </div>
+  </footer>
+
+  <!-- Temporary Toast Feedback -->
+  <div id="toast" role="alert"></div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    /* =========================================================================
+       1. CONFIGURATION & CONSTANTS
+       ========================================================================= */
+    // Default coordinates: Kerala, India (11.75° N, 75.49° E, UTC+5.5)
+    var CONFIG = {
+      lat: 11.75,
+      lng: 75.49,
+      timezone: 5.5,
+      locationName: 'Kerala'
+    };
+
+    var PRAYER_NAMES = [
+      { id: 'fajr', en: 'Fajr', ar: 'الفجر' },
+      { id: 'sunrise', en: 'Sunrise', ar: 'الشروق' },
+      { id: 'dhuhr', en: 'Dhuhr', ar: 'الظهر' },
+      { id: 'asr', en: 'Asr', ar: 'العصر' },
+      { id: 'maghrib', en: 'Maghrib', ar: 'المغرب' },
+      { id: 'isha', en: 'Isha', ar: 'العشاء' }
+    ];
+
+    // Supported Astronomical Calculation Methods
+    var METHODS = {
+      MWL: {
+        id: 'MWL',
+        name: 'Muslim World League',
+        short: 'MWL',
+        fajrAngle: 18.0,
+        ishaAngle: 17.0,
+        aladhanId: 3
+      },
+      KARACHI: {
+        id: 'KARACHI',
+        name: 'Univ Islamic Sci, Karachi',
+        short: 'Karachi',
+        fajrAngle: 18.0,
+        ishaAngle: 18.0,
+        aladhanId: 1
+      },
+      MAKKAH: {
+        id: 'MAKKAH',
+        name: 'Umm Al-Qura (Makkah)',
+        short: 'Makkah',
+        fajrAngle: 18.5,
+        ishaInterval: 90, // 90 mins after Maghrib
+        aladhanId: 4
+      },
+      EGYPT: {
+        id: 'EGYPT',
+        name: 'Egyptian General Auth',
+        short: 'Egypt',
+        fajrAngle: 19.5,
+        ishaAngle: 17.5,
+        aladhanId: 5
+      },
+      ISNA: {
+        id: 'ISNA',
+        name: 'ISNA (North America)',
+        short: 'ISNA',
+        fajrAngle: 15.0,
+        ishaAngle: 15.0,
+        aladhanId: 2
+      }
+    };
+    var METHOD_KEYS = ['MWL', 'KARACHI', 'MAKKAH', 'EGYPT', 'ISNA'];
+    var currentMethodIdx = 0;
+
+    // State Variables
+    var currentCalculatedTimes = null; // Holds 6 prayer hours as decimal
+    var nextPrayerIndex = 0;
+    var nextPrayerTargetDate = null;
+    var focusedRowIndex = 0;
+    var isOnlineSynced = false;
+    var toastTimeout = null;
+    var exitPressCount = 0;
+    var exitTimer = null;
+
+    /* =========================================================================
+       2. ASTRONOMICAL SOLAR CALCULATION ENGINE (Pure Offline Math)
+       ========================================================================= */
+    var DEG_TO_RAD = Math.PI / 180.0;
+    var RAD_TO_DEG = 180.0 / Math.PI;
+
+    function fixAngle(a) {
+      a = a - 360.0 * Math.floor(a / 360.0);
+      return a < 0 ? a + 360.0 : a;
+    }
+
+    function fixHour(a) {
+      a = a - 24.0 * Math.floor(a / 24.0);
+      return a < 0 ? a + 24.0 : a;
+    }
+
+    function getJulianDate(year, month, day) {
+      var y = year, m = month;
+      if (m <= 2) {
+        y -= 1;
+        m += 12;
+      }
+      var a = Math.floor(y / 100);
+      var b = 2 - a + Math.floor(a / 4);
+      return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+    }
+
+    function getSunCoordinates(jd) {
+      var d = jd - 2451545.0;
+      var g = fixAngle(357.529 + 0.98560028 * d);
+      var q = fixAngle(280.459 + 0.98564736 * d);
+      var L = fixAngle(q + 1.915 * Math.sin(g * DEG_TO_RAD) + 0.020 * Math.sin(2 * g * DEG_TO_RAD));
+      var e = 23.439 - 0.00000036 * d;
+
+      var ra = (Math.atan2(Math.cos(e * DEG_TO_RAD) * Math.sin(L * DEG_TO_RAD), Math.cos(L * DEG_TO_RAD)) * RAD_TO_DEG) / 15.0;
+      ra = fixHour(ra);
+
+      var eqt = (q / 15.0) - ra;
+      eqt = fixHour(eqt);
+      if (eqt > 12) eqt -= 24;
+
+      var decl = Math.asin(Math.sin(e * DEG_TO_RAD) * Math.sin(L * DEG_TO_RAD)) * RAD_TO_DEG;
+      return { decl: decl, eqt: eqt };
+    }
+
+    function getHourAngle(angle, decl, lat, isAltitude) {
+      var phi = lat * DEG_TO_RAD;
+      var delta = decl * DEG_TO_RAD;
+      var sinH = isAltitude ? Math.sin(angle * DEG_TO_RAD) : -Math.sin(angle * DEG_TO_RAD);
+      var cosVal = (sinH - Math.sin(phi) * Math.sin(delta)) / (Math.cos(phi) * Math.cos(delta));
+      if (cosVal > 1.0) cosVal = 1.0;
+      if (cosVal < -1.0) cosVal = -1.0;
+      return (Math.acos(cosVal) * RAD_TO_DEG) / 15.0;
+    }
+
+    function computePrayerTimesForDate(date, lat, lng, tz, method) {
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1;
+      var day = date.getDate();
+
+      var jd = getJulianDate(year, month, day) - lng / (15.0 * 24.0);
+      var sun = getSunCoordinates(jd);
+
+      // Solar noon in local hours
+      var noon = fixHour(12.0 + tz - (lng / 15.0) - sun.eqt);
+
+      // Fajr
+      var tFajr = getHourAngle(method.fajrAngle, sun.decl, lat, false);
+      var fajr = fixHour(noon - tFajr);
+
+      // Sunrise (depression angle 0.8333°)
+      var tSun = getHourAngle(0.8333, sun.decl, lat, false);
+      var sunrise = fixHour(noon - tSun);
+
+      // Dhuhr (solar transit + 1.5 min safety margin)
+      var dhuhr = fixHour(noon + 1.5 / 60.0);
+
+      // Asr (Shafi'i: shadow length factor = 1)
+      var asrAlt = Math.atan(1.0 / (1.0 + Math.tan(Math.abs(lat - sun.decl) * DEG_TO_RAD))) * RAD_TO_DEG;
+      var tAsr = getHourAngle(asrAlt, sun.decl, lat, true);
+      var asr = fixHour(noon + tAsr);
+
+      // Maghrib (sunset + 2 min)
+      var sunset = fixHour(noon + tSun);
+      var maghrib = fixHour(sunset + 2.0 / 60.0);
+
+      // Isha
+      var isha;
+      if (method.ishaInterval) {
+        isha = fixHour(maghrib + method.ishaInterval / 60.0);
+      } else {
+        var tIsha = getHourAngle(method.ishaAngle, sun.decl, lat, false);
+        isha = fixHour(noon + tIsha);
+      }
+
+      return [fajr, sunrise, dhuhr, asr, maghrib, isha];
+    }
+
+    function formatTime12(decimalHours) {
+      decimalHours = fixHour(decimalHours);
+      var hrs = Math.floor(decimalHours);
+      var mins = Math.round((decimalHours - hrs) * 60);
+      if (mins === 60) {
+        hrs = (hrs + 1) % 24;
+        mins = 0;
+      }
+      var ampm = hrs >= 12 ? 'PM' : 'AM';
+      var h12 = hrs % 12;
+      if (h12 === 0) h12 = 12;
+      var hh = (h12 < 10 ? '0' : '') + h12;
+      var mm = (mins < 10 ? '0' : '') + mins;
+      return hh + ':' + mm + ' ' + ampm;
+    }
+
+    /* =========================================================================
+       3. HIJRI CALENDAR & MOON PHASE ALGORITHMS
+       ========================================================================= */
+    function computeHijriDate(date) {
+      // Try modern Intl Islamic calendar first
+      try {
+        if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+          var fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+          var parts = fmt.formatToParts(date);
+          var d = '', m = '', y = '';
+          for (var i = 0; i < parts.length; i++) {
+            if (parts[i].type === 'day') d = parts[i].value;
+            if (parts[i].type === 'month') m = parts[i].value;
+            if (parts[i].type === 'year') y = parts[i].value;
+          }
+          if (d && m && y) {
+            y = y.replace(/[^0-9]/g, '');
+            return d + ' ' + m + ' ' + y + ' AH';
+          }
+        }
+      } catch (err) {}
+
+      // Kuwaiti Astronomical Algorithm Fallback
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1;
+      var day = date.getDate();
+
+      var y = year, m = month;
+      if (m <= 2) { y -= 1; m += 12; }
+      var a = Math.floor(y / 100);
+      var b = 2 - a + Math.floor(a / 4);
+      var jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524;
+
+      var epoch = 1948440;
+      var l = jd - epoch + 10632;
+      var n = Math.floor((l - 1) / 10631);
+      l = l - 10631 * n + 354;
+      var j = (Math.floor((10985 - l) / 5316)) * (Math.floor((50 * l) / 17719)) +
+              (Math.floor(l / 5670)) * (Math.floor((43 * l) / 15238));
+      l = l - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) -
+              (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+      var hm = Math.floor((24 * l) / 709);
+      var hd = l - Math.floor((709 * hm) / 24);
+      var hy = 30 * n + j - 30;
+
+      var hijriMonths = [
+        'Muharram', 'Safar', 'Rabi I', 'Rabi II',
+        'Jumada I', 'Jumada II', 'Rajab', 'Sha\'ban',
+        'Ramadan', 'Shawwal', 'Dhu al-Qi\'dah', 'Dhu al-Hijjah'
+      ];
+      var mName = hijriMonths[hm - 1] || 'Jumada I';
+      return hd + ' ' + mName + ' ' + hy + ' AH';
+    }
+
+    function computeMoonPhase(date) {
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1;
+      var day = date.getDate();
+      var jd = getJulianDate(year, month, day);
+
+      // Known synodic month: 29.53058867 days, reference new moon Jan 6, 2000
+      var phase = ((jd - 2451549.26) % 29.53058867) / 29.53058867;
+      if (phase < 0) phase += 1;
+
+      if (phase < 0.03 || phase >= 0.97) return { emoji: '🌑', name: 'New' };
+      if (phase < 0.22) return { emoji: '🌒', name: 'Waxing' };
+      if (phase < 0.28) return { emoji: '🌓', name: '1st Qtr' };
+      if (phase < 0.47) return { emoji: '🌔', name: 'Gibbous' };
+      if (phase < 0.53) return { emoji: '🌕', name: 'Full' };
+      if (phase < 0.72) return { emoji: '🌖', name: 'Waning' };
+      if (phase < 0.78) return { emoji: '🌗', name: 'Last Qtr' };
+      return { emoji: '🌘', name: 'Crescent' };
+    }
+
+    /* =========================================================================
+       4. TIME RECALCULATION & UI REFRESH
+       ========================================================================= */
+    function refreshCalculations() {
+      var now = new Date();
+      var activeMethod = METHODS[METHOD_KEYS[currentMethodIdx]];
+
+      // 1. Gregorian & Hijri Date
+      var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var dayName = days[now.getDay()];
+      var dNum = (now.getDate() < 10 ? '0' : '') + now.getDate();
+      var mName = months[now.getMonth()];
+      var gregStr = dayName + ', ' + dNum + ' ' + mName + ' ' + now.getFullYear();
+
+      document.getElementById('greg-date').textContent = gregStr;
+      document.getElementById('hijri-date').textContent = computeHijriDate(now);
+
+      // 2. Moon Phase
+      var moon = computeMoonPhase(now);
+      document.getElementById('moon-badge').innerHTML = '<span>' + moon.emoji + '</span><span>' + moon.name + '</span>';
+
+      // 3. Compute Today's Prayer Times
+      currentCalculatedTimes = computePrayerTimesForDate(
+        now,
+        CONFIG.lat,
+        CONFIG.lng,
+        CONFIG.timezone,
+        activeMethod
+      );
+
+      // Populate Times in the List
+      for (var i = 0; i < 6; i++) {
+        var el = document.getElementById('time-' + i);
+        if (el) {
+          el.textContent = formatTime12(currentCalculatedTimes[i]);
+        }
+      }
+
+      // Update Method Badge
+      var tagEl = document.getElementById('method-tag');
+      if (tagEl) {
+        tagEl.textContent = activeMethod.short + (isOnlineSynced ? ' • Synced' : ' • Calc');
+      }
+
+      // 4. Determine Next Upcoming Prayer
+      determineNextPrayer(now, activeMethod);
+    }
+
+    function determineNextPrayer(now, activeMethod) {
+      var year = now.getFullYear();
+      var month = now.getMonth();
+      var date = now.getDate();
+      var nowMs = now.getTime();
+
+      var foundIndex = -1;
+      var targetDate = null;
+
+      // Check all 6 events today
+      for (var i = 0; i < 6; i++) {
+        var decH = currentCalculatedTimes[i];
+        var hrs = Math.floor(decH);
+        var mins = Math.round((decH - hrs) * 60);
+        if (mins === 60) { hrs = (hrs + 1) % 24; mins = 0; }
+
+        var pDate = new Date(year, month, date, hrs, mins, 0);
+        if (pDate.getTime() > nowMs) {
+          foundIndex = i;
+          targetDate = pDate;
+          break;
+        }
+      }
+
+      // If all prayers today have passed, next prayer is Fajr tomorrow
+      if (foundIndex === -1) {
+        foundIndex = 0; // Fajr
+        var tomorrow = new Date(nowMs + 86400000);
+        var tomorrowTimes = computePrayerTimesForDate(
+          tomorrow,
+          CONFIG.lat,
+          CONFIG.lng,
+          CONFIG.timezone,
+          activeMethod
+        );
+        var fH = Math.floor(tomorrowTimes[0]);
+        var fM = Math.round((tomorrowTimes[0] - fH) * 60);
+        if (fM === 60) { fH = (fH + 1) % 24; fM = 0; }
+        targetDate = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), fH, fM, 0);
+      }
+
+      nextPrayerIndex = foundIndex;
+      nextPrayerTargetDate = targetDate;
+
+      // Update Spotlight Header
+      var pInfo = PRAYER_NAMES[nextPrayerIndex];
+      document.getElementById('spotlight-name').textContent = 'Next: ' + pInfo.en.toUpperCase();
+      document.getElementById('spotlight-ar').textContent = pInfo.ar;
+
+      // Update Row Highlights
+      updateRowClasses();
+    }
+
+    function updateRowClasses() {
+      for (var i = 0; i < 6; i++) {
+        var row = document.getElementById('row-' + i);
+        if (!row) continue;
+
+        // Upcoming highlight
+        if (i === nextPrayerIndex) {
+          row.classList.add('upcoming');
+        } else {
+          row.classList.remove('upcoming');
+        }
+
+        // Focused outline
+        if (i === focusedRowIndex) {
+          row.classList.add('focused');
+        } else {
+          row.classList.remove('focused');
+        }
+      }
+    }
+
+    /* =========================================================================
+       5. LIVE COUNTDOWN TIMER (Ticks Every Second)
+       ========================================================================= */
+    function updateCountdown() {
+      if (!nextPrayerTargetDate) return;
+
+      var nowMs = Date.now();
+      var diffMs = nextPrayerTargetDate.getTime() - nowMs;
+
+      // If target time is reached, recompute prayers
+      if (diffMs <= 0) {
+        refreshCalculations();
+        return;
+      }
+
+      var totalSec = Math.floor(diffMs / 1000);
+      var hrs = Math.floor(totalSec / 3600);
+      var mins = Math.floor((totalSec % 3600) / 60);
+      var secs = totalSec % 60;
+
+      var str;
+      if (hrs > 0) {
+        str = 'in ' + hrs + 'h ' + (mins < 10 ? '0' : '') + mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
+      } else if (mins > 0) {
+        str = 'in ' + mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
+      } else {
+        str = 'in ' + secs + 's';
+      }
+
+      var cdEl = document.getElementById('countdown-val');
+      if (cdEl) cdEl.textContent = str;
+    }
+
+    /* =========================================================================
+       6. ASYNC ALADHAN REST API FALLBACK
+       ========================================================================= */
+    var aladhanAbortCtrl = null;
+
+    function fetchAladhanTimes() {
+      if (typeof fetch !== 'function') return;
+
+      var activeMethod = METHODS[METHOD_KEYS[currentMethodIdx]];
+      var protocol = (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:') ? 'https:' : 'http:';
+      var url = protocol + '//api.aladhan.com/v1/timings?latitude=' + CONFIG.lat +
+                '&longitude=' + CONFIG.lng +
+                '&method=' + activeMethod.aladhanId;
+
+      if (aladhanAbortCtrl && typeof aladhanAbortCtrl.abort === 'function') {
+        aladhanAbortCtrl.abort();
+      }
+
+      if (typeof AbortController !== 'undefined') {
+        try {
+          aladhanAbortCtrl = new AbortController();
+        } catch (e) {
+          aladhanAbortCtrl = null;
+        }
+      }
+
+      var timeoutId = setTimeout(function() {
+        if (aladhanAbortCtrl && typeof aladhanAbortCtrl.abort === 'function') {
+          aladhanAbortCtrl.abort();
+        }
+      }, 3500);
+
+      var fetchOptions = (aladhanAbortCtrl && aladhanAbortCtrl.signal) ? { signal: aladhanAbortCtrl.signal } : {};
+
+      fetch(url, fetchOptions)
+        .then(function(res) {
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error('Status ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          if (json && json.data && json.data.timings) {
+            isOnlineSynced = true;
+            parseAndApplyApiTimings(json.data.timings);
+            if (json.data.date && json.data.date.hijri) {
+              var h = json.data.date.hijri;
+              document.getElementById('hijri-date').textContent =
+                h.day + ' ' + (h.month.en || h.month) + ' ' + h.year + ' AH';
+            }
+            showToast('Synced with Aladhan API');
+            refreshCalculations();
+          }
+        })
+        .catch(function(err) {
+          clearTimeout(timeoutId);
+          isOnlineSynced = false;
+          // Graceful fallback to offline calculations
+          refreshCalculations();
+        });
+    }
+
+    function parseTimeStr(str) {
+      if (!str) return null;
+      var clean = str.split(' ')[0]; // Remove (IST)
+      var parts = clean.split(':');
+      if (parts.length >= 2) {
+        return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60.0;
+      }
+      return null;
+    }
+
+    function parseAndApplyApiTimings(timings) {
+      var f = parseTimeStr(timings.Fajr);
+      var s = parseTimeStr(timings.Sunrise);
+      var d = parseTimeStr(timings.Dhuhr);
+      var a = parseTimeStr(timings.Asr);
+      var m = parseTimeStr(timings.Maghrib);
+      var i = parseTimeStr(timings.Isha);
+
+      if (f !== null && s !== null && d !== null && a !== null && m !== null && i !== null) {
+        currentCalculatedTimes = [f, s, d, a, m, i];
+      }
+    }
+
+    /* =========================================================================
+       7. KEYPAD & D-PAD NAVIGATION HANDLERS
+       ========================================================================= */
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(function() {
+        toast.style.display = 'none';
+      }, 1800);
+    }
+
+    function navigateRow(direction) {
+      focusedRowIndex = (focusedRowIndex + direction + 6) % 6;
+      updateRowClasses();
+    }
+
+    function cycleMethod() {
+      currentMethodIdx = (currentMethodIdx + 1) % METHOD_KEYS.length;
+      var m = METHODS[METHOD_KEYS[currentMethodIdx]];
+      isOnlineSynced = false; // Reset online sync badge upon method change
+      refreshCalculations();
+      showToast('Method: ' + m.short);
+    }
+
+    function triggerSync() {
+      showToast('Synchronizing...');
+      // Recalculate offline first
+      refreshCalculations();
+      // Try online fetch in background
+      fetchAladhanTimes();
+    }
+
+    function resetFocusToNext() {
+      focusedRowIndex = nextPrayerIndex;
+      updateRowClasses();
+      showToast('Focus: ' + PRAYER_NAMES[nextPrayerIndex].en);
+    }
+
+    function handleExit() {
+      exitPressCount++;
+      if (exitPressCount === 1) {
+        showToast('Press RSK again to exit');
+        if (exitTimer) clearTimeout(exitTimer);
+        exitTimer = setTimeout(function() {
+          exitPressCount = 0;
+        }, 2500);
+      } else {
+        showToast('Exiting...');
+        setTimeout(function() {
+          try {
+            window.close();
+          } catch (e) {}
+        }, 400);
+      }
+    }
+
+    // Attach Keyboard Listeners
+    window.addEventListener('keydown', function(e) {
+      var key = e.key;
+      var code = e.keyCode || e.which;
+
+      // ArrowUp (D-pad Up)
+      if (key === 'ArrowUp' || code === 38) {
+        e.preventDefault();
+        navigateRow(-1);
+        return;
+      }
+
+      // ArrowDown (D-pad Down)
+      if (key === 'ArrowDown' || code === 40) {
+        e.preventDefault();
+        navigateRow(1);
+        return;
+      }
+
+      // Key '1' or SoftLeft (CloudPhone / KaiOS softkeys: 112, 21)
+      if (key === '1' || code === 49 || key === 'SoftLeft' || code === 112 || code === 21) {
+        e.preventDefault();
+        cycleMethod();
+        return;
+      }
+
+      // Key '5' or Enter or Select (D-pad Center / OK: 13, 53, 23)
+      if (key === '5' || code === 53 || key === 'Enter' || code === 13 || key === 'Select' || code === 23) {
+        e.preventDefault();
+        triggerSync();
+        return;
+      }
+
+      // Key '0' (Reset focus to next immediate prayer)
+      if (key === '0' || code === 48) {
+        e.preventDefault();
+        resetFocusToNext();
+        return;
+      }
+
+      // SoftRight or Backspace or Escape (RSK: 113, 22, 8, 27)
+      if (key === 'SoftRight' || code === 113 || code === 22 || key === 'Backspace' || code === 8 || key === 'Escape' || code === 27) {
+        e.preventDefault();
+        handleExit();
+        return;
+      }
+
+      // Block default viewport scrolling on any other navigation / numeric keys
+      if (['ArrowLeft', 'ArrowRight', '2', '3', '4', '6', '7', '8', '9', '*', '#'].indexOf(key) !== -1 ||
+          (code >= 48 && code <= 57) || (code >= 37 && code <= 40)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Touch / Click Support for Softkeys & Rows
+    document.getElementById('btn-softkey-left').addEventListener('click', cycleMethod);
+    document.getElementById('btn-softkey-center').addEventListener('click', triggerSync);
+    document.getElementById('btn-softkey-right').addEventListener('click', handleExit);
+
+    for (var r = 0; r < 6; r++) {
+      (function(idx) {
+        var el = document.getElementById('row-' + idx);
+        if (el) {
+          el.addEventListener('click', function() {
+            focusedRowIndex = idx;
+            updateRowClasses();
+          });
+        }
+      })(r);
+    }
+
+    /* =========================================================================
+       8. INITIALIZATION
+       ========================================================================= */
+    // Initial calculation
+    refreshCalculations();
+    focusedRowIndex = nextPrayerIndex;
+    updateRowClasses();
+    updateCountdown();
+
+    // Start 1-second countdown interval
+    setInterval(updateCountdown, 1000);
+
+    // Initial background sync attempt with Aladhan API
+    fetchAladhanTimes();
+
+  })();
+  </script>
+</body>
+</html>
